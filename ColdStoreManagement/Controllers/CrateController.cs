@@ -21,14 +21,14 @@ namespace ColdStoreManagement.Controllers
         [HttpPost("GenerateCrateReport")]
         public async Task<IActionResult> GenerateCrateReport([FromBody] CrateModel model)
         {
-            var result = await _crateService.GenerateCrateReportAsync(model);
+            var result = await _crateService.GenerateCrateReportModelAsync(model);
             return Ok(result);
         }
 
         [HttpGet("GetCrateSummaryMain")]
         public async Task<IActionResult> GetCrateSummaryMain()
         {
-            var result = await _crateService.GetCrateSummaryMainAsync();
+            var result = await _crateService.GetCrateSummaryMainModelAsync();
             return Ok(result);
         }
 
@@ -49,14 +49,14 @@ namespace ColdStoreManagement.Controllers
         [HttpGet("CheckCratesPartyOut")]
         public async Task<IActionResult> CheckCratesPartyOut([FromQuery] string growerGroupName, [FromQuery] string flag)
         {
-            var result = await _crateService.CheckCratesPartyOutAsync(growerGroupName, flag);
+            var result = await _crateService.CheckCratesPartyOutModelAsync(growerGroupName, flag);
             return Ok(result);
         }
 
         [HttpGet("CheckCratesPartySubOut")]
         public async Task<IActionResult> CheckCratesPartySubOut([FromQuery] string growerName, [FromQuery] string growerGroupName, [FromQuery] string flag)
         {
-            var result = await _crateService.CheckCratesPartySubOutAsync(growerName, growerGroupName, flag);
+            var result = await _crateService.CheckCratesPartySubOutModelAsync(growerName, growerGroupName, flag);
             return Ok(result);
         }
 
