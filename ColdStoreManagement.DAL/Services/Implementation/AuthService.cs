@@ -85,7 +85,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             {
                 UserId = model.UserId,
                 GlobalUserName = model.GlobalUserName,
-                GlobalUnitName = model.GlobalUnitName,
+                GlobalUnitName = model.GlobalUnitName ?? string.Empty,
             };
             await FillValidationAsync(companyModel);
 

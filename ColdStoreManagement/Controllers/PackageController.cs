@@ -1,5 +1,5 @@
 ﻿using ColdStoreManagement.BLL.Errors;
-using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -67,7 +67,7 @@ namespace ColdStoreManagement.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> AddPackage([FromBody] CompanyModel model)
+        public async Task<IActionResult> AddPackage([FromBody] PackageModel model)
         {
             try
             {
@@ -96,7 +96,7 @@ namespace ColdStoreManagement.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdatePackage(int id, [FromBody] CompanyModel model)
+        public async Task<IActionResult> UpdatePackage(int id, [FromBody] PackageModel model)
         {
             try
             {

@@ -24,7 +24,7 @@ namespace ColdStoreManagement.BLL.Data.UserData
 
         [DateInPast(YearsAgo = 18,  ErrorMessage = "Users should be at least 18 years old to register.")]
         public DateTime BirthDate { get; set; } = BirthDateNullValue;
-        public string Occupation { get; set; }
-        public string Notes { get; set; }
+        public string? Occupation { get; set; }
+        public string? Notes { get; set; }
     }
 }

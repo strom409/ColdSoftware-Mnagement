@@ -8,7 +8,7 @@ namespace ColdStoreManagement.BLL.Models
 
         [Required(ErrorMessage = "Service type name is required")]
         [StringLength(40, ErrorMessage = "Service type name cannot exceed 40 characters")]
-        public string Name { get; set; } = string.Empty;
+        public string ServiceName { get; set; } = string.Empty;
         public string? Stdetails { get; set; }
         public string? Flag { get; set; }
     }

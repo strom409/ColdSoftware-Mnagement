@@ -392,11 +392,11 @@ namespace ColdStoreManagement.DAL.Helper
                 return await ExecuteDatasetAsync(_connectionString, CommandType.StoredProcedure, spName);
             }
         }
-        public static async Task<DataSet> ExecuteDatasetAsync(SqlConnection connection, 
-            CommandType commandType, string commandText)
-        {
-            return await ExecuteDatasetAsync(connection, commandType, commandText, (SqlParameter[])null);
-        }
+        //public static async Task<DataSet> ExecuteDatasetAsync(SqlConnection connection, 
+        //    CommandType commandType, string commandText)
+        //{
+        //    return await ExecuteDatasetAsync(connection, commandType, commandText, (SqlParameter[])null);
+        //}
 
 
         public static async Task<DataSet> ExecuteDatasetAsync(SqlTransaction transaction, 
@@ -543,7 +543,7 @@ namespace ColdStoreManagement.DAL.Helper
 
                 string hashKey = connectionString + ":" + commandText;
 
-                SqlParameter[] cachedParameters = paramCache[hashKey] as SqlParameter[];
+                SqlParameter[]? cachedParameters = paramCache[hashKey] as SqlParameter[];
                 if (cachedParameters == null)
                 {
                     return null;

@@ -17,13 +17,13 @@ namespace ColdStoreManagement.BLL.Data
 
         // Foreign key to Building
         public int? BuildingId { get; set; }
-        public Building Building { get; set; }
+        public Building? Building { get; set; }
 
 
         // Foreign key to Units
         public int? UnitId { get; set; }
         [ForeignKey(nameof(UnitId))]
-        public UnitMaster UnitMaster { get; set; }
+        public UnitMaster? UnitMaster { get; set; }
 
         // Newly added properties
         public string? ChamberType { get; set; }
@@ -42,6 +42,6 @@ namespace ColdStoreManagement.BLL.Data
         public bool IsMeznineChamber { get; set; }
         public bool IsActualChamber { get; set; }
 
-        public ICollection<Allocation> Allocation { get; set; }
+        public ICollection<Allocation>? Allocation { get; set; }
     }
 }

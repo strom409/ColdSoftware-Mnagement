@@ -11,7 +11,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         public async Task<List<UnitMasterModel>> GetAllAsync()
         {
             const string query = "SELECT * FROM dbo.Unit_master";
-            var ds = await _sql.ExecuteDatasetAsync(CommandType.Text, query);
+            using var ds = await _sql.ExecuteDatasetAsync(CommandType.Text, query);
             var units = new List<UnitMasterModel>();
 
             if (ds.Tables.Count == 0)

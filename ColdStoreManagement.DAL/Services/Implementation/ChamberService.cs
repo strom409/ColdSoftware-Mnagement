@@ -108,7 +108,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 {
                     ChamberId = Convert.ToInt32(row["Id"]),
                     IsLocked = Convert.ToBoolean(row["Status"]),
-                    ChamberName = row["Name"].ToString(),
+                    ChamberName = row["Name"].ToString() ?? string.Empty,
                     ChamberinDate = row["mindate"].ToString(),
                     ChamberOutDate = row["maxdate"].ToString(),
 
@@ -1288,8 +1288,8 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             CompanyModel EditModel,
             int Unit)
         {
-            SqlConnection con = null;
-            SqlTransaction transaction = null;
+            SqlConnection? con = null;
+            SqlTransaction? transaction = null;
 
             try
             {
@@ -1341,7 +1341,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                     return false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }

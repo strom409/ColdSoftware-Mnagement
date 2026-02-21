@@ -73,11 +73,9 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         #region -----------Buiding-----------
         public async Task<List<BuildingModel>> GetAllBuildingsAsync()
         {
-            const string query = "SELECT * FROM dbo.building_master";
-
-            var ds = await _sql.ExecuteDatasetAsync(
+            using var ds = await _sql.ExecuteDatasetAsync(
                 CommandType.Text,
-                query
+                "SELECT * FROM dbo.building_master"
             );
 
             var buildings = new List<BuildingModel>();
@@ -90,9 +88,9 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 buildings.Add(new BuildingModel
                 {
                     Id = Convert.ToInt32(row["id"]),
-                    Buildname = row["Buname"]?.ToString(),
-                    Bcode = row["Bcode"]?.ToString(),
-                    Bstat = row["Bstat"]?.ToString(),
+                    Buildname = row["Buname"]?.ToString() ?? string.Empty,
+                    Bcode = row["Bcode"]?.ToString() ?? string.Empty,
+                    Bstat = row["Bstat"]?.ToString() ?? string.Empty,
                     BuildDetails = row["BuildDetails"]?.ToString()
                 });
             }

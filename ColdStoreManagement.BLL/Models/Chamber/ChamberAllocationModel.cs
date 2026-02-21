@@ -5,7 +5,7 @@ namespace ColdStoreManagement.BLL.Models.Chamber
     {
         public int ChamberId { get; set; }       
         public string? ChamberName { get; set; }
-        public string GrowerGroupName { get; set; } = string.Empty;
+        public string? GrowerGroupName { get; set; } = string.Empty;
 
         /// <summary>
         /// Maps to 'TotalQuantity' - use decimal for weight/units

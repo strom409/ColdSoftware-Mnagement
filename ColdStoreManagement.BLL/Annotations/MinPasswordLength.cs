@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace ColdStoreManagement.BLL.Annotations
@@ -7,12 +6,18 @@ namespace ColdStoreManagement.BLL.Annotations
     public class MinPasswordLengthAttribute : ValidationAttribute
     {
         int MinLength { get; }
-        public MinPasswordLengthAttribute(int minLength, string errorMsg) : base(errorMsg) {
+        public MinPasswordLengthAttribute(int minLength, string errorMsg) : base(errorMsg) 
+        {
             MinLength = minLength;
         }
 
-        public override bool IsValid(object value) {
-            return ((string)value).Length >= MinLength;
+        public override bool IsValid(object? value)
+        {
+            if (value is null)
+            {
+                return false; // ValidationAttribute convention: null is valid, use [Required] for null checks
+            }
+            return value is string str && str.Length >= MinLength;
         }
     }
 }

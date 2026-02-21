@@ -92,14 +92,14 @@ namespace ColdStoreManagement.Controllers
                     return BadRequest(ModelState);
 
                 var result = await _authService.UpdateUserPasswordAsync(model.UserName, model.OldPassword, model.NewPassword);
-                if (result != null && result.RetFlag.Trim() == "FALSE")
+                if (result != null && result.RetFlag?.Trim() == "FALSE")
                 {
                     return BadRequest("Failed to update Password");
                 }
 
                 return Ok(result);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }

@@ -6,9 +6,14 @@ namespace ColdStoreManagement.BLL.Validators
 {
     public class QuantityCheckAttribute : ValidationAttribute
     {
-        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        protected override ValidationResult IsValid(object? value, ValidationContext validationContext)
         {
-            var dbContext = (AppDbContext)validationContext.GetService(typeof(AppDbContext));
+            var dbContext = validationContext.GetService(typeof(AppDbContext)) as AppDbContext;
+            if (dbContext == null)
+            {
+                return new ValidationResult("Database context is not available.");
+            }
+
             int editedQiantity = Convert.ToInt32(value);
 
             var model = (AddChamberVM)validationContext.ObjectInstance;
@@ -22,7 +27,9 @@ namespace ColdStoreManagement.BLL.Validators
                 return new ValidationResult($"Chamber capacity cannot be less than quantity already consumed : {checkQuantityConsumed} ");
             }
 
+#pragma warning disable CS8603 // Possible null reference return.
             return ValidationResult.Success;
+#pragma warning restore CS8603 // Possible null reference return.
         }
     }
 }

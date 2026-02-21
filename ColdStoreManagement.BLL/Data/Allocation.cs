@@ -6,17 +6,17 @@ namespace ColdStoreManagement.BLL.Data
     {
         public int Id { get; set; }
 
-        public int chamberid { get; set; }
+        public int Chamberid { get; set; }
 
-        public Chamber chamber { get; set; }
+        public Chamber? Chamber { get; set; }
 
-        public int partyid { get; set; }
+        public int Partyid { get; set; }
 
-        public Party party { get; set; }
+        public Party? Party { get; set; }
 
         public int? SubGrowerId { get; set; }
 
-        public SubGrower SubGrower { get; set; }
+        public SubGrower? SubGrower { get; set; }
 
         public int Quantity { get; set; }
         public int? Series { get; set; }

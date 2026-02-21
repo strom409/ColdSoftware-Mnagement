@@ -4,12 +4,19 @@ using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using System.Reflection;
 
 namespace ColdStoreManagement.DAL.Services.Implementation
 {
-    public class UserService(SQLHelperCore sql) : BaseService(sql), IUserService
+    public class UserService : BaseService, IUserService
     {
+        private readonly IConfiguration _configuration;
+
+        public UserService(SQLHelperCore sql, IConfiguration configuration) : base(sql)
+        {
+            _configuration = configuration;
+        }
+
+
         #region ---------- Account ----------
 
         public async Task<CompanyModel?> AddAccountName(CompanyModel model)
@@ -51,7 +58,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         {
             CompanyModel? companyModel = null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -67,28 +74,8 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                         {
                             companyModel = new CompanyModel
                             {
-
-                                AccountType = reader["type"] as string,
-
-
+                                AccountType = reader["type"] as string ?? string.Empty,
                                 Growerid = Convert.ToInt32(reader["partyid"])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             };
                         }
                     }
@@ -106,7 +93,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         {
             CompanyModel? companyModel = null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -146,10 +133,6 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                                 AccountGroup = reader["subname"] as string,
 
                                 AccountRetActive = Convert.ToBoolean(reader["Status"])
-
-
-
-
                             };
                         }
                     }
@@ -158,64 +141,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
 
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             return companyModel;
-
         }
 
 
@@ -246,7 +172,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         {
             List<CompanyModel> Getstatuslist = new List<CompanyModel>();
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 const string query = "select rtrim(statname) as status from allstat";
                 SqlCommand cmd = new SqlCommand(query, con)
@@ -279,7 +205,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         {
             CompanyModel? companyModel = null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -301,36 +227,14 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                             {
 
                                 UserName = rdr["username"] as string,
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                             };
                         }
                     }
                 }
                 con.Close();
-
             }
 
             return companyModel;
-
         }
 
 
@@ -438,7 +342,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             if (EditModel == null)
                 return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -481,7 +385,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             if (companyModel == null)
                 return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -522,7 +426,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             if (loginModel == null)
                 return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -576,7 +480,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         {
             CompanyModel? companyModel = null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -642,7 +546,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
 
         public async Task<bool> UpdateuserStatus(int id, CompanyModel companyModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
 
             {
                 const string query = "UpdateuserStatus";
@@ -668,7 +572,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
 
         public async Task<bool> UpdateuserGroupStatus(int id, CompanyModel companyModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
 
             {
                 const string query = "UpdateuserGroupStatus";
@@ -694,7 +598,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
 
         public async Task<bool> UpdateGroupStatus(int id, CompanyModel companyModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
 
             {
                 const string query = "UpdateGroupStatus";
@@ -719,7 +623,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         }
         public async Task<bool> UpdatesubGroupStatus(int id, CompanyModel companyModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
 
             {
                 const string query = "updatesubgroupstatus";
@@ -749,7 +653,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             if (EditModel == null)
                 return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
 
@@ -796,7 +700,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         }
         public async Task<bool> UpdateSubGrowerStatus(int id, CompanyModel companyModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.Value))
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
 
             {
                 const string query = "UpdateSubGrowerStatus";

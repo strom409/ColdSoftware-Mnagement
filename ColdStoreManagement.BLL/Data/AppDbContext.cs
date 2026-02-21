@@ -23,13 +23,13 @@ namespace ColdStoreManagement.BLL.Data
             modelBuilder.Entity<Dtrans>()
                 .HasOne(d => d.party)
                 .WithMany()
-                .HasForeignKey(d => d.partyid)
+                .HasForeignKey(d => d.Partyid)
                 .OnDelete(DeleteBehavior.Restrict); //  no cascade
 
             modelBuilder.Entity<Dtrans>()
                 .HasOne(d => d.chamber)
                 .WithMany()
-                .HasForeignKey(d => d.chamberid)
+                .HasForeignKey(d => d.Chamberid)
                 .OnDelete(DeleteBehavior.Restrict); //  no cascade
 
             modelBuilder.Entity<Dtrans>()

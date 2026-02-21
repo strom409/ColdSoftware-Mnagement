@@ -5,7 +5,7 @@ namespace ColdStoreManagement.BLL.Models.Chamber
     {
         // Primary Identifiers
         public int ChamberId { get; set; }
-        public string ChamberName { get; set; } = string.Empty;
+        public string? ChamberName { get; set; } = string.Empty;
 
         // Capacity and Units
         public decimal Capacity { get; set; }   //qty

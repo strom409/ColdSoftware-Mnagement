@@ -48,15 +48,18 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         public async Task<List<ServiceTypesModel>> GetAllServices()
         {
             const string query = "SELECT id, sname, sdescrip FROM dbo.servicetypes";
-            var ds = await _sql.ExecuteDatasetAsync(CommandType.Text, query);
+            using var ds = await _sql.ExecuteDatasetAsync(CommandType.Text, query);
+
             var list = new List<ServiceTypesModel>();
+            if (ds.Tables[0].Rows.Count == 0)
+                return list;
 
             foreach (DataRow row in ds.Tables[0].Rows)
             {
                 list.Add(new ServiceTypesModel
                 {
                     Id = Convert.ToInt32(row["id"]),
-                    Name = row["sname"]?.ToString(),
+                    ServiceName = row["sname"]?.ToString() ?? string.Empty,
                     Stdetails = row["sdescrip"]?.ToString()
                 });
             }
@@ -81,7 +84,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                     (SELECT ISNULL(MAX(id) + 1, 1) FROM servicetypes),
                     @Stname,
                     @Stdetails)",
-                new SqlParameter("@Stname", model.Name),
+                new SqlParameter("@Stname", model.ServiceName),
                 new SqlParameter("@Stdetails", model.Stdetails));
 
             return true;
@@ -95,7 +98,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                       sdescrip = @Stdetails
                   WHERE id = @Id",
                 new SqlParameter("@Id", id),
-                new SqlParameter("@Stname", model.Name),
+                new SqlParameter("@Stname", model.ServiceName),
                 new SqlParameter("@Stdetails", model.Stdetails));
 
             return true;

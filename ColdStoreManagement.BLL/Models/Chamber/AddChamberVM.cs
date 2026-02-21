@@ -6,14 +6,14 @@ namespace ColdStoreManagement.BLL.Models.Chamber
     public class AddChamberVM
     {
         [Required(ErrorMessage = "Building Name is required")]
-        public string BuildingName { get; set; }
+        public string BuildingName { get; set; } = null!;
 
         [Required(ErrorMessage = "Unit Name is required")]
-        public string UnitName { get; set; }
+        public string UnitName { get; set; } = null!;
 
         [Required(ErrorMessage = "Chamber Name is required")]
         [UniqueChamberName(ErrorMessage = "This chamber name already exists.")]
-        public string ChamberName { get; set; }
+        public string ChamberName { get; set; } = null!;
         public int ChamberId { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Chamber Capacity must be a positive number")]
@@ -24,10 +24,10 @@ namespace ColdStoreManagement.BLL.Models.Chamber
         public bool ChamberLocked { get; set; }
 
         [Required(ErrorMessage = "BinOrMeznineChamber Name is required")]
-        public string BinOrMeznineChamber { get; set; }
+        public string BinOrMeznineChamber { get; set; } = null!;
 
         [Required(ErrorMessage = "Type is required")]
-        public string Type { get; set; }
+        public string Type { get; set; } = null!;
 
         public bool Status { get; set; }
 
