@@ -9,7 +9,7 @@ namespace ColdStoreManagement.BLL.Models.Auth
         public int UserId { get; set; }
 
         [Required(ErrorMessage = "The NewPassword value should be specified.")]
-        [MinPasswordLength(6, "The NewPassword must be at least 6 characters long.")]
+        // [MinPasswordLength(6, "The NewPassword must be at least 6 characters long.")]
         public string NewPassword { get; set; } = string.Empty;
        
         [Required(ErrorMessage = "The RetypePassword value must be specified.")]
@@ -28,7 +28,7 @@ namespace ColdStoreManagement.BLL.Models.Auth
         [Required(ErrorMessage = "The OldPassword value should be specified.")]
         public string OldPassword { get; set; } = string.Empty;
         [Required(ErrorMessage = "The NewPassword value should be specified.")]
-        [MinPasswordLength(6, "The NewPassword must be at least 6 characters long.")]
+        // [MinPasswordLength(6, "The NewPassword must be at least 6 characters long.")]
         public string NewPassword { get; set; } = string.Empty;
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

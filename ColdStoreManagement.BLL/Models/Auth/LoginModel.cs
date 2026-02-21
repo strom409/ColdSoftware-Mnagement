@@ -8,7 +8,7 @@ namespace ColdStoreManagement.BLL.Models.Auth
         [Required(ErrorMessage = "The Username value should be specified.")]
         public string GlobalUserName { get; set; } = null!;
         [Required(ErrorMessage = "The Password value should be specified.")]
-        [MinPasswordLength(6, "The Password must be at least 6 characters long.")]
+        // [MinPasswordLength(6, "The Password must be at least 6 characters long.")]
         public string UserPassword { get; set; } = null!;
         [Required(ErrorMessage = "Please select a unit.")]
         public string GlobalUnitName { get; set; } = null!;
