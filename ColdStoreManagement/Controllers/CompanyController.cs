@@ -1,5 +1,6 @@
 ﻿using ColdStoreManagement.BLL.Models.Bank;
 using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +21,7 @@ namespace ColdStoreManagement.Controllers
         // ===================== COMPANY =====================
 
         [HttpGet("{companyId:int}")]
-        public async Task<IActionResult> GetCompanyById(int companyId = 1)
+        public async Task<IActionResult> GetCompanyById(int companyId)
         {
             try
             {
@@ -42,7 +43,7 @@ namespace ColdStoreManagement.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> EditCompany(int id, [FromBody] CompanyModel model)
+        public async Task<IActionResult> EditCompany(int id, [FromBody] CompanyDto model)
         {
             try
             {
@@ -123,7 +124,7 @@ namespace ColdStoreManagement.Controllers
 
         // PUT: api/building/{id}
         [HttpPut("Buiding/{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CompanyModel model)
+        public async Task<IActionResult> Update(int id, [FromBody] BuildingModel model)
         {
             try
             {

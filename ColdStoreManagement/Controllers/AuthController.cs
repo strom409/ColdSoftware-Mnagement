@@ -82,6 +82,7 @@ namespace ColdStoreManagement.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
+        
         [HttpPost("change-password")]
         [Authorize(policy: "RequireAuthenticatedUser")]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest model)

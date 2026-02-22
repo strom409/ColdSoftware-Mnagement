@@ -25,26 +25,48 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 CommandType.Text
             );
         }
+
         public async Task<List<ServiceTypesModel>> GetServicesFromAgreement(string selectedPurchase)
         {
             const string query = @"
-            SELECT RTRIM(sname) AS Name
-            FROM servicetypes
-            WHERE id IN (
-                SELECT [service]
-                FROM growerAgreement
-                WHERE mainid IN (
-                    SELECT partyid
-                    FROM party
-                    WHERE partytypeid + '-' + partyname = @Partyid
-                )
-            )";
+                    SELECT 
+                        s.id AS Id,
+                        RTRIM(s.sname) AS ServiceName,
+                        s.sdescrip AS Stdetails,
+                        s.flag AS Flag
+                    FROM servicetypes s
+                    INNER JOIN growerAgreement g ON s.id = g.service
+                    INNER JOIN party p ON g.mainid = p.partyid
+                    WHERE p.partytypeid + '-' + p.partyname = @Partyid";
+
             return await _sql.ExecuteReaderAsync<ServiceTypesModel>(
                 query,
                 CommandType.Text,
                 new SqlParameter("@Partyid", selectedPurchase)
             );
         }
+        //public async Task<List<ServiceTypesModel>> GetServicesFromAgreement(string selectedPurchase)
+        //{
+        //    const string query = @"
+        //    SELECT RTRIM(sname) AS Name
+        //    FROM servicetypes
+        //    WHERE id IN (
+        //        SELECT [service]
+        //        FROM growerAgreement
+        //        WHERE mainid IN (
+        //            SELECT partyid
+        //            FROM party
+        //            WHERE partytypeid + '-' + partyname = @Partyid
+        //        )
+        //    )";
+        //    return await _sql.ExecuteReaderAsync<ServiceTypesModel>(
+        //        query,
+        //        CommandType.Text,
+        //        new SqlParameter("@Partyid", selectedPurchase)
+        //    );
+        //}
+
+
         public async Task<List<ServiceTypesModel>> GetAllServices()
         {
             const string query = "SELECT id, sname, sdescrip FROM dbo.servicetypes";

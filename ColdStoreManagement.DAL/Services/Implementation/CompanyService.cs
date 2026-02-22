@@ -1,4 +1,5 @@
 ﻿using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Helper;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.Data.SqlClient;
@@ -9,30 +10,30 @@ namespace ColdStoreManagement.DAL.Services.Implementation
     public class CompanyService(SQLHelperCore sql) : BaseService(sql), ICompanyService
     {
         #region ---------Company---------
-        public async Task<CompanyModel?> GetCompanyByIdAsync(int companyId = 1)
+        public async Task<CompanyDto?> GetCompanyByIdAsync(int companyId)
         {
-            return await _sql.ExecuteSingleAsync<CompanyModel>(
+            return await _sql.ExecuteSingleAsync<CompanyDto>(
                 @"SELECT 
                         cid       AS Id,
                         cname     AS Name,
-                        gst,
-                        regno,
-                        pan,
-                        website,
+                        gst       AS Gst,
+                        regno     AS Regno,
+                        pan       AS Pan,
+                        website   AS Website,
                         addr      AS Caddress,
-                        city,
+                        city      AS City,
                         Contact1  AS Phone,
-                        Contact1  AS Mobile,
-                        State,
-                        Pincode,
-                        email
+                        contact2  AS Mobile,
+                        State     AS State,
+                        Pincode   AS Pincode,
+                        email     AS Email
                       FROM company 
                       WHERE cid = @Id",
                 CommandType.Text,
                 new SqlParameter("@Id", companyId)
             );
         }
-        public async Task<bool> EditCompany(int id, CompanyModel companyModel)
+        public async Task<bool> EditCompany(int id, CompanyDto companyDto)
         {
             await _sql.ExecuteNonQueryAsync(
                 CommandType.Text,
@@ -51,18 +52,18 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                           addr=@Caddress
                       WHERE cid=@Id",
                 new SqlParameter("@Id", id),
-                new SqlParameter("@Name", companyModel.Name),
-                new SqlParameter("@Gst", companyModel.Gst),
-                new SqlParameter("@Regno", companyModel.Regno),
-                new SqlParameter("@Pan", companyModel.Pan),
-                new SqlParameter("@Website", companyModel.Website),
-                new SqlParameter("@Caddress", companyModel.Caddress),
-                new SqlParameter("@City", companyModel.City),
-                new SqlParameter("@State", companyModel.State),
-                new SqlParameter("@Pincode", companyModel.Pincode),
-                new SqlParameter("@Email", companyModel.Email),
-                new SqlParameter("@Phone", companyModel.Phone),
-                new SqlParameter("@Mobile", companyModel.Mobile)
+                new SqlParameter("@Email", companyDto.Email),
+                new SqlParameter("@State", companyDto.State),
+                new SqlParameter("@City", companyDto.City),
+                new SqlParameter("@Phone", companyDto.Phone),
+                new SqlParameter("@Mobile", companyDto.Mobile),
+                new SqlParameter("@Pincode", companyDto.Pincode),
+                new SqlParameter("@Regno", companyDto.Regno),
+                new SqlParameter("@Website", companyDto.Website),
+                new SqlParameter("@Pan", companyDto.Pan),
+                new SqlParameter("@Name", companyDto.Name),
+                new SqlParameter("@Gst", companyDto.Gst),
+                new SqlParameter("@Caddress", companyDto.Caddress)
             );
 
             return true;
@@ -139,7 +140,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
 
             return true;
         }
-        public async Task<bool> UpdateBuildingAsync(int id, CompanyModel model)
+        public async Task<bool> UpdateBuildingAsync(int id, BuildingModel model)
         {
             const string query = @"
                 UPDATE dbo.building_master
@@ -154,10 +155,10 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 CommandType.Text,
                 query,
                 new SqlParameter("@Id", id),
-                new SqlParameter("@Bucode", model.Bucode),
+                new SqlParameter("@Bucode", model.Bcode),
                 new SqlParameter("@Buildname", model.Buildname),
-                new SqlParameter("@Bustat", model.Bustat),
-                new SqlParameter("@Budetails", model.Budetails)
+                new SqlParameter("@Bustat", model.Bstat),
+                new SqlParameter("@Budetails", model.BuildDetails)
             );
 
             return true;

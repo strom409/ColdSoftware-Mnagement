@@ -8,7 +8,7 @@ namespace ColdStoreManagement.Controllers
     [Route("api/[controller]")]
     [Produces("application/json")]
     [ApiController]
-    [Authorize]
+    [AllowAnonymous]
     public class UnitController(
         IUnitService unitService,
         ILogger<UnitController> logger) : ControllerBase
