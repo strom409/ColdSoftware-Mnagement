@@ -1,6 +1,7 @@
 ﻿using ColdStoreManagement.BLL.Models;
 using ColdStoreManagement.BLL.Models.Chamber;
 using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 
 namespace ColdStoreManagement.DAL.Services.Interface
 {
@@ -29,8 +30,8 @@ namespace ColdStoreManagement.DAL.Services.Interface
         Task<UserPrivModel?> GrowerPriv(string Ugroup);
 
         // Chamber & Grower CRUD/Status
-        Task<CompanyModel?> AddNewChamber(CompanyModel model);
-        Task<CompanyModel?> UpdateChamber(int chamberid, CompanyModel EditModel);
+        Task<ChamberDto?> AddNewChamber(ChamberDto model);
+        Task<ChamberUpdateDto?> UpdateChamber(int chamberid, ChamberUpdateDto model);
         Task<bool> LockUnlockChamber(int chamberId);
         Task<bool> GenchamberAgg(int id);
         Task<CompanyModel?> DeleteGrowerGroup(int id, CompanyModel companyModel);

@@ -1,6 +1,7 @@
 ﻿using ColdStoreManagement.BLL.Models;
 using ColdStoreManagement.BLL.Models.Chamber;
 using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Helper;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.Data.SqlClient;
@@ -403,7 +404,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         }
 
         // Chamber & Grower CRUD/Status
-        public async Task<CompanyModel?> AddNewChamber(CompanyModel model)
+        public async Task<ChamberDto?> AddNewChamber(ChamberDto model)
         {
             if (model == null) return null;
 
@@ -411,7 +412,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 CommandType.StoredProcedure,
                 "AddNewChamber",
                 new SqlParameter("@ctype", model.ChamberType),
-                new SqlParameter("@unit", model.Unitname),
+                new SqlParameter("@unit", model.UnitName),
                 new SqlParameter("@Capacity", model.Capacity),
                 new SqlParameter("@User", model.GlobalUserName)
             );
@@ -419,22 +420,22 @@ namespace ColdStoreManagement.DAL.Services.Implementation
             await FillValidationAsync(model);
             return model;
         }
-        public async Task<CompanyModel?> UpdateChamber(int chamberid, CompanyModel EditModel)
+        public async Task<ChamberUpdateDto?> UpdateChamber(int chamberid, ChamberUpdateDto model)
         {
-            if (EditModel == null) return null;
+            if (model == null) return null;
 
             await _sql.ExecuteNonQueryAsync(
                 CommandType.StoredProcedure,
                 "UpdateChamber",
                 new SqlParameter("@chamberid", chamberid),
-                new SqlParameter("@ctype", EditModel.ChamberType),
-                new SqlParameter("@unit", EditModel.Unitname),
-                new SqlParameter("@Capacity", EditModel.Capacity),
-                new SqlParameter("@User", EditModel.GlobalUserName)
+                new SqlParameter("@ctype", model.ChamberType),
+                new SqlParameter("@unit", model.UnitName),
+                new SqlParameter("@Capacity", model.Capacity),
+                new SqlParameter("@User", model.GlobalUserName)
             );
 
-            await FillValidationAsync(EditModel);
-            return EditModel;
+            await FillValidationAsync(model);
+            return model;
         }
         //Getchamberdet
         public async Task<List<ChamberPartyStockModel>> GetChamberDetailsAsync(int chamberid)

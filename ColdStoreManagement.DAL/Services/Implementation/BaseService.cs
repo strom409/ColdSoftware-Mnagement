@@ -1,5 +1,6 @@
 ﻿using ColdStoreManagement.BLL.Models.Auth;
 using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Helper;
 using System.Data;
 
@@ -34,6 +35,36 @@ namespace ColdStoreManagement.DAL.Services.Implementation
         protected async Task FillValidationAsync(CompanyModel model)
         {
             var validation = await _sql.ExecuteSingleAsync<CompanyModel>(
+                @"SELECT TOP 1 
+                    flag        AS RetFlag,
+                    remarks     AS RetMessage
+                FROM dbo.svalidate",
+                CommandType.Text);
+
+            if (validation == null) return;
+
+            model.RetFlag = validation.RetFlag;
+            model.RetMessage = validation.RetMessage;
+        }
+
+        protected async Task FillValidationAsync(ChamberDto model)
+        {
+            var validation = await _sql.ExecuteSingleAsync<ChamberDto>(
+                @"SELECT TOP 1 
+                    flag        AS RetFlag,
+                    remarks     AS RetMessage
+                FROM dbo.svalidate",
+                CommandType.Text);
+
+            if (validation == null) return;
+
+            model.RetFlag = validation.RetFlag;
+            model.RetMessage = validation.RetMessage;
+        }
+
+        protected async Task FillValidationAsync(ChamberUpdateDto model)
+        {
+            var validation = await _sql.ExecuteSingleAsync<ChamberUpdateDto>(
                 @"SELECT TOP 1 
                     flag        AS RetFlag,
                     remarks     AS RetMessage

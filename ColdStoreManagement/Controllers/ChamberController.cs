@@ -1,5 +1,6 @@
 ﻿using ColdStoreManagement.BLL.Models.Chamber;
 using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -273,6 +274,50 @@ namespace ColdStoreManagement.Controllers
         {
             try { return Ok(await _service.AddChallanGrower(model)); }
             catch (Exception ex) { return StatusCode(500, ex.Message); }
+        }
+
+        [HttpPost("add-new")]
+        public async Task<IActionResult> AddNewChamber([FromBody] ChamberDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var result = await _service.AddNewChamber(model);
+
+                if (result?.RetFlag?.ToString().ToUpper() == "FALSE")
+                    return BadRequest(result.RetMessage);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding new chamber");
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("update/{id}")]
+        public async Task<IActionResult> UpdateChamber(int id, [FromBody] ChamberUpdateDto model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+
+                var result = await _service.UpdateChamber(id, model);
+
+                if (result?.RetFlag?.ToString().ToUpper() == "FALSE")
+                    return BadRequest(result.RetMessage);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error updating chamber {Id}", id);
+                return StatusCode(500, ex.Message);
+            }
         }
 
         #endregion
