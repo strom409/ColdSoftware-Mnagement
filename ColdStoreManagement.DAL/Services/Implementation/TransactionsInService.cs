@@ -189,10 +189,10 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 );
 
                 // Fetch validation result (same transaction)
-                var dt = await _sql.ExecuteDatasetAsync(
-                    "SELECT TOP 1 flag,remarks FROM dbo.svalidate",
+                var dt = await _sql.ExecuteTransactionDatasetAsync(
+                    transaction, 
                     CommandType.Text,
-                    transaction
+                    "SELECT TOP 1 flag,remarks FROM dbo.svalidate"                      
                 );
 
                 if (dt.Tables[0].Rows.Count > 0)
@@ -212,34 +212,122 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                 return EditModel;
             }
         }
-
-        public async Task<TransactionsInModel?> GetPreinwardIdAsync(int id)
+        public async Task<TransactionsInModel?> GetPreinwardIdAsync(int selectedGrowerId)
         {
-             TransactionsInModel? model = null;
-             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+            TransactionsInModel? model = null;
+
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
-                // Basic query based on EmployeeAdoNetService
-                string query = "SELECT * FROM GateInTrans WHERE GateInId = @id"; // Simplified for brevity, add full joins if needed
-                using (SqlCommand cmd = new SqlCommand(query, con))
+                await con.OpenAsync();
+
+                var sql = @"SELECT ci.GateInId,ci.remarks,
+    ci.Lotno,
+    ci.PreInIrn,ci.LotIrn,
+    ci.GateInDate,
+    p.partytypeid + '-' + p.partyname AS PartyName,
+    CONVERT(varchar(max), ps.partyid) +'-' + ps.partyname AS GrowerName,
+    CONVERT(varchar(max), cm.id) +'-' + cm.ChallanName AS ChallanName,
+    RTRIM(vi.vehno) +SPACE(1) + '(' + RTRIM(vi.drivername) + SPACE(1) + ')' + SPACE(1) + '(' + RTRIM(vi.contactno) + ')' AS vehno,
+    ci.qty,ci.sno,ci.createddate,ci.KhataName,ci.ChallanNo ,ur.uname,
+    ci.Remarks,
+    ci.preInirn,ui.uname as username,pq.name as variety,ci.cratetype,st.sname,um.Ucode,pt.name,
+    
+    --New Status Field
+    CASE
+        WHEN EXISTS(
+            SELECT 1
+            FROM QualityControl qi
+            WHERE qi.LotNo = ci.LotNo
+        ) THEN 'Completed'
+        ELSE 'Pending'
+    END AS Status
+
+FROM GateInTrans ci
+LEFT JOIN party p ON ci.partyid = p.partyid
+LEFT JOIN partysub ps ON ci.growerid = ps.partyid
+LEFT JOIN challanmaster cm ON ci.challanid = cm.id
+LEFT JOIN vehinfo vi ON ci.vehid = vi.vid
+LEFT JOIN users ui ON ci.createdby = ui.id
+LEFT JOIN prodqaul pq ON ci.varietyid = pq.id
+LEFT JOIN servicetypes st ON ci.schemeid = st.id
+LEFT JOIN unit_master um ON ci.Unitid = um.id
+LEFT JOIN PTYPE pt ON ci.packageid = pt.id
+LEFT JOIN users ur ON ci.Createdby = ur.id
+
+
+where ci.GateInId = @selectedGrowerId
+
+ORDER BY ci.GateInId DESC
+";
+
+                using (var cmd = new SqlCommand(sql, con))
                 {
-                    cmd.Parameters.AddWithValue("@id", id);
-                    await con.OpenAsync();
-                     using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
+                    cmd.Parameters.AddWithValue("@selectedGrowerId", selectedGrowerId);
+
+                    using (var rdr = await cmd.ExecuteReaderAsync())
                     {
-                          if(await rdr.ReadAsync()){
-                               model = new TransactionsInModel {
-                                    PreInwardId = Convert.ToInt32(rdr["GateInId"]),
-                                    PreinwardDate = Convert.ToDateTime(rdr["GateInDate"]),
-                                    PreInwardQty = Convert.ToDecimal(rdr["qty"]),
-                                    PreInwardStatus = rdr["Status"].ToString(),
-                                    PreInwardRemarks = rdr["Remarks"].ToString()
-                               };
-                          }
+                        if (await rdr.ReadAsync())
+                        {
+                            model = new TransactionsInModel
+                            {
+
+                                PreInwardId = Convert.ToInt32(rdr["GateInId"]),
+                                PreinwardDate = Convert.ToDateTime(rdr["GateInDate"]),
+
+                                GrowerGroupName = rdr["PartyName"].ToString(),
+                                GrowerName = rdr["GrowerName"].ToString(),
+                                ChallanName = rdr["ChallanName"].ToString(),
+                                Vehno = rdr["vehno"].ToString(),
+                                PreInIrn = rdr["PreInIrn"].ToString(),
+                                LotIrn = rdr["LotIrn"].ToString(),
+                                ChallanNo = rdr["ChallanNo"].ToString(),
+
+
+                                PreInwardQty = Convert.ToDecimal(rdr["qty"]),
+
+                                GlobalUserName = rdr["username"].ToString(),
+                                PreInwardStatus = rdr["Status"].ToString(),
+                                PreInwardRemarks = rdr["Remarks"].ToString(),
+
+                            };
+                        }
                     }
                 }
+                con.Close();
+
             }
+
             return model;
         }
+
+        //public async Task<TransactionsInModel?> GetPreinwardIdAsync(int id)
+        //{
+        //     TransactionsInModel? model = null;
+        //     using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+        //    {
+        //        // Basic query based on EmployeeAdoNetService
+        //        string query = "SELECT * FROM GateInTrans WHERE GateInId = @id"; // Simplified for brevity, add full joins if needed
+        //        using (SqlCommand cmd = new SqlCommand(query, con))
+        //        {
+        //            cmd.Parameters.AddWithValue("@id", id);
+        //            await con.OpenAsync();
+        //             using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
+        //            {
+        //                  if(await rdr.ReadAsync()){
+        //                       model = new TransactionsInModel {
+        //                            PreInwardId = Convert.ToInt32(rdr["GateInId"]),
+        //                            PreinwardDate = Convert.ToDateTime(rdr["GateInDate"]),
+        //                            PreInwardQty = Convert.ToDecimal(rdr["qty"]),
+        //                            //PreInwardStatus = rdr["Status"].ToString(),
+        //                           PreInwardStatus = rdr["Status"] != DBNull.Value ? rdr["Status"].ToString() : string.Empty,
+        //                           PreInwardRemarks = rdr["Remarks"].ToString()
+        //                       };
+        //                  }
+        //            }
+        //        }
+        //    }
+        //    return model;
+        //}
 
         public async Task<List<TransactionsInModel>> GetPreinwardIdlistAsync(int selectedGrowerId)
         {

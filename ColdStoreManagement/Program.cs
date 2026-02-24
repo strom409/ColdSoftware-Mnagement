@@ -31,11 +31,14 @@ builder.Host.UseSerilog((context, configuration) =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder =>
-    {
-        builder.WithOrigins("http://localhost:5173", "http://localhost:44399")
-        .AllowAnyHeader()
-        .AllowAnyMethod()
-        .AllowCredentials();
+    {        
+        builder.AllowAnyOrigin() // Allows any origin
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        ////builder.WithOrigins("http://localhost:5173", "http://localhost:44399")
+        //.AllowAnyHeader()
+        //.AllowAnyMethod()
+        //.AllowCredentials();
     });
 });
 

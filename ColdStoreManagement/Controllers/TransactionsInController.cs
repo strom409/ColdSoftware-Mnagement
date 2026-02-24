@@ -53,6 +53,15 @@ namespace ColdStoreManagement.Controllers
             return Ok(result);
         }
 
+        [HttpGet("GetPreinwardIdlist/{id}")]
+        public async Task<IActionResult> GetPreinwardIdlist(int id)
+        {
+            var result = await _service.GetPreinwardIdlistAsync(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+
         // --- Chamber Allocation Endpoints ---
 
         [HttpPost("GenchamberAgg/{id}")]

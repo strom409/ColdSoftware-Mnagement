@@ -361,7 +361,15 @@ namespace ColdStoreManagement.DAL.Helper
             await connection.OpenAsync();
             return await ExecuteDatasetAsync(connection, commandType, commandText, commandParameters);
         }
-        public static async Task<DataSet> ExecuteDatasetAsync(SqlConnection connection, 
+        public async Task<DataSet> ExecuteDatasetAsync(string commandText, CommandType commandType,
+            params SqlParameter[] commandParameters)
+        {
+            await using SqlConnection connection = new SqlConnection(_connectionString);
+
+            await connection.OpenAsync();
+            return await ExecuteDatasetAsync(connection, commandType, commandText, commandParameters);
+        }
+        private static async Task<DataSet> ExecuteDatasetAsync(SqlConnection connection, 
             CommandType commandType, string commandText, 
             params SqlParameter[] commandParameters)
         {
@@ -382,7 +390,7 @@ namespace ColdStoreManagement.DAL.Helper
             }
         }
 
-        public async Task<DataSet> ExecuteDatasetAsync(string spName, params object[] parameterValues)
+        public async Task<DataSet> ExecutesDatasetAsync(string spName, params object[] parameterValues)
         {
             if (string.IsNullOrEmpty(spName)) throw new ArgumentNullException(nameof(spName));
 
@@ -390,27 +398,19 @@ namespace ColdStoreManagement.DAL.Helper
             {
                 SqlParameter[] commandParameters = SqlHelperParameterCache.GetSpParameterSet(_connectionString, spName);
                 AssignParameterValues(commandParameters, parameterValues);
-                return await ExecuteDatasetAsync(_connectionString, CommandType.StoredProcedure, spName, commandParameters);
+                return await ExecuteDatasetAsync(CommandType.StoredProcedure, spName, commandParameters);
             }
             else
             {
-                return await ExecuteDatasetAsync(_connectionString, CommandType.StoredProcedure, spName);
+                return await ExecuteDatasetAsync(CommandType.StoredProcedure, spName);
             }
         }
-        //public static async Task<DataSet> ExecuteDatasetAsync(SqlConnection connection, 
-        //    CommandType commandType, string commandText)
-        //{
-        //    return await ExecuteDatasetAsync(connection, commandType, commandText, (SqlParameter[])null);
-        //}
-
-
-        public static async Task<DataSet> ExecuteDatasetAsync(SqlTransaction transaction, 
+        public async Task<DataSet> ExecuteTransactionDatasetAsync(SqlTransaction transaction,
             CommandType commandType, string commandText)
         {
-            return await ExecuteDatasetAsync(transaction, commandType, commandText, (SqlParameter[])null);
+            return await ExecuteTransactionDatasetAsync(transaction, commandType, commandText, (SqlParameter[])null);
         }
-
-        private static async Task<DataSet> ExecuteDatasetAsync(SqlTransaction transaction, 
+        public static async Task<DataSet> ExecuteTransactionDatasetAsync(SqlTransaction transaction, 
             CommandType commandType, string commandText,
             params SqlParameter[] commandParameters)
         {
@@ -441,11 +441,11 @@ namespace ColdStoreManagement.DAL.Helper
             {
                 SqlParameter[] commandParameters = SqlHelperParameterCache.GetSpParameterSet(transaction.Connection, spName);
                 AssignParameterValues(commandParameters, parameterValues);
-                return await ExecuteDatasetAsync(transaction, CommandType.StoredProcedure, spName, commandParameters);
+                return await ExecuteTransactionDatasetAsync(transaction, CommandType.StoredProcedure, spName, commandParameters);
             }
             else
             {
-                return await ExecuteDatasetAsync(transaction, CommandType.StoredProcedure, spName);
+                return await ExecuteTransactionDatasetAsync(transaction, CommandType.StoredProcedure, spName);
             }
         }
 
