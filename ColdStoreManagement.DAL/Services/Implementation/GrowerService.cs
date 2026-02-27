@@ -402,16 +402,16 @@ namespace ColdStoreManagement.DAL.Services.Implementation
                        rtrim(state) as GrowerState,
                        rtrim(city) as GrowerCity,
                        email as GrowerEmail,
-                       rtrim(vill) as GrowerVillage,
+                       rtrim(village) as GrowerVillage,
                        rtrim(remarks) as GrowerRemarks,
-                       rtrim(contact1) as GrowerContact,
-                       rtrim(addr) as GrowerAddress,
-                       convert(varchar, cdated, 103) as Cdated,
-                       type as Grtype,
-                       rtrim(gst) as GrowerGst,
-                       rtrim(pan) as GrowerPan,
-                       cratelimit as GrowerCratelimit,
-                       rtrim(puser) as GrowerUser
+                       rtrim(phone) as GrowerContact,
+                       rtrim(address) as GrowerAddress,
+                       convert(varchar, createdon, 103) as Cdated,
+                       status as Grstatus,
+                       rtrim(GSTNo) as GrowerGst,
+                       rtrim(panno) as GrowerPan,
+                       CrateQtyLimit as GrowerCrateissue,
+                       CrateIssueLimitPer as GrowerCratelimit
                 FROM party 
                 WHERE type = 'C' AND partycode = @GrowerId";
 
