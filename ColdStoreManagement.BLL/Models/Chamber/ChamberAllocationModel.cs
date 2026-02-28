@@ -29,4 +29,11 @@ namespace ColdStoreManagement.BLL.Models.Chamber
         public decimal ChamberAllocation { get; set; }
     }
 
+    public class RunningChamberModel
+    {
+        public int ChamberId { get; set; }
+        public string? GrowerGroupName { get; set; }
+        public int ChamberAvailQty { get; set; }
+    }
+
 }

@@ -1,4 +1,6 @@
-﻿using ColdStoreManagement.BLL.Models.TransactionsIn;
+﻿using ColdStoreManagement.BLL.Models.Chamber;
+using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.TransactionsIn;
 using ColdStoreManagement.DAL.Helper;
 using ColdStoreManagement.DAL.Services.Interface;
 using Microsoft.Data.SqlClient;
@@ -694,23 +696,23 @@ ORDER BY ci.GateInId DESC";
 
         public async Task<List<TransactionsInModel>> CheckChamberAsync(int selectedNewchamber)
         {
-             List<TransactionsInModel> results = new List<TransactionsInModel>();
-             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+            List<TransactionsInModel> results = new List<TransactionsInModel>();
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
-                 await con.OpenAsync();
-                 using (SqlCommand cmd = new SqlCommand("CheckChamber", con))
+                await con.OpenAsync();
+                using (SqlCommand cmd = new SqlCommand("CheckChamber", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@chamber", selectedNewchamber);
                     await cmd.ExecuteNonQueryAsync();
                 }
-                 using (SqlCommand cmd2 = new SqlCommand("select ChamberId,isnull(sum(AllotedQty),0)-isnull(sum(InQty),0) as ChamberQty from allotedQty group by ChamberId", con))
+                using (SqlCommand cmd2 = new SqlCommand("select ChamberId,isnull(sum(AllotedQty),0)-isnull(sum(InQty),0) as ChamberQty from allotedQty group by ChamberId", con))
                 {
-                     using (SqlDataReader rdr = await cmd2.ExecuteReaderAsync())
+                    using (SqlDataReader rdr = await cmd2.ExecuteReaderAsync())
                     {
                         while (await rdr.ReadAsync())
                         {
-                             results.Add(new TransactionsInModel
+                            results.Add(new TransactionsInModel
                             {
                                 ChamberAvailQty = rdr.GetDecimal(rdr.GetOrdinal("ChamberQty")),
                                 ChamberId = rdr.GetInt32(rdr.GetOrdinal("ChamberId"))
@@ -723,7 +725,83 @@ ORDER BY ci.GateInId DESC";
         }
 
         // --- Quality Methods ---
+        public async Task<List<QualityModel>> GetallQuality()
+        {
+            return await _sql.ExecuteReaderAsync<QualityModel>(
+                @"select id as Qid, name as Qname, qdescrip as Qdetails from dbo.prodqaul",
+                CommandType.Text);
+        }
+        public async Task<LotDetailModel?> GetLotFullDet(int selectedGrowerId)
+        {
+            LotDetailModel? resultModel = null;
 
+            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+            {
+                await con.OpenAsync();
+
+                var sql = @"
+SELECT
+      p.partytypeid + '-' + p.partyname AS PartyName,
+    CONVERT(varchar(max), ps.partyid) + '-' + ps.partyname AS GrowerName,cm.challanName,ci.challanNo,ci.lotno ,prt.name as item,pt.name as package,ci.khataName,ci.cratetype,pq.name as variety,
+   st.sname, ci.qty,  ci.GateInId ,ci.PreInIrn,ci.LotIrn,ci.partyid,ci.LocationChamberId,ci.Remarks
+    
+FROM GateInTrans ci
+LEFT JOIN party p ON ci.partyid = p.partyid
+LEFT JOIN partysub ps ON ci.growerid = ps.partyid
+LEFT JOIN challanmaster cm ON ci.challanid = cm.id         
+LEFT JOIN vehinfo vi ON ci.vehid = vi.vid
+LEFT JOIN users ui ON ci.createdby = ui.id
+LEFT JOIN prodqaul pq ON ci.varietyid = pq.id
+LEFT JOIN servicetypes st ON ci.schemeid = st.id
+LEFT JOIN unit_master um ON ci.Unitid = um.id
+LEFT JOIN PTYPE pt ON ci.packageid = pt.id
+LEFT JOIN users ur ON ci.Createdby = ur.id
+LEFT JOIN prodtype prt ON ci.itemid = prt.id
+WHERE 
+ Lotno=@Trid and qty>0
+ORDER BY Lotno";
+                using (var cmd = new SqlCommand(sql, con))
+                {
+                    cmd.Parameters.AddWithValue("@Trid", selectedGrowerId);
+
+
+                    using (var rdr = await cmd.ExecuteReaderAsync())
+                    {
+                        if (await rdr.ReadAsync())
+                        {
+                            resultModel = new LotDetailModel
+                            {
+
+                                GrowerGroupName = rdr["PartyName"].ToString(),
+
+                                GrowerName = rdr["GrowerName"].ToString(),
+                                Itemname = rdr["item"].ToString(),
+                                PreInwardUom = rdr["package"].ToString(),
+                                PreInwardKhata = rdr["khataName"].ToString(),
+                                VarietyId = rdr["variety"].ToString(),
+                                PreInwardQty = Convert.ToDecimal(rdr["qty"]),
+                                PreCrateType = rdr["cratetype"].ToString(),
+                                ServiceId = rdr["sname"].ToString(),
+                                //PreInwardId = Convert.ToInt32(rdr["GateInId"]),
+                                //PreInIrn = rdr["PreInIrn"].ToString(),
+                                Lotno = Convert.ToInt32(rdr["lotno"]),
+                                Prodname = rdr["item"].ToString(),
+                                LotIrn = rdr["LotIrn"].ToString(),
+                                Partyid = Convert.ToInt32(rdr["partyid"]),
+                                ChamberId = Convert.ToInt32(rdr["LocationChamberId"]),
+                                PreInwardRemarks = rdr["Remarks"].ToString(),
+                                PreinwardStatus = "Yes",
+                                ChallanName = rdr["ChallanName"]?.ToString() ?? "",
+                                ChallanNo = rdr["ChallanNo"]?.ToString() ?? "",
+                            };
+                        }
+                    }
+                }
+                con.Close();
+            }
+
+            return resultModel;
+        }
         public async Task<List<TransactionsInModel>> GetPendingQualityAsync(int unitId, string status)
         {
             List<TransactionsInModel> results = new List<TransactionsInModel>();
@@ -817,6 +895,52 @@ ORDER BY ci.GateInId DESC";
             return model;
         }
 
+        public async Task<List<RunningChamberModel>> GetRunningChambers(int selectedid)
+        {
+            List<RunningChamberModel> Runningchambers = new List<RunningChamberModel>();
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+                {
+                    const string query = "runningchambers";
+                    SqlCommand cmd = new SqlCommand(query, con)
+                    {
+                        CommandType = CommandType.StoredProcedure
+                    };
+                    cmd.Parameters.AddWithValue("@Growerid", selectedid);
+
+                    con.Open();
+                    SqlDataReader rdr = await cmd.ExecuteReaderAsync();
+
+                    while (rdr.Read())
+                    {
+                        //RunningChamberModel model = new RunningChamberModel()
+                        //{
+                        //    ChamberId = Convert.ToInt32(rdr["ChamberId"]),
+                        //    ChamberAvailQty = rdr.GetDecimal(rdr.GetOrdinal("RemainingQty")),
+                        //};
+                        RunningChamberModel model = new RunningChamberModel()
+                        {
+                            ChamberId = rdr.IsDBNull("ChamberId") ? 0 : rdr.GetInt32(rdr.GetOrdinal("ChamberId")),
+                            ChamberAvailQty = rdr.IsDBNull("RemainingQty") ? 0 : rdr.GetInt32(rdr.GetOrdinal("RemainingQty")),
+                        };
+                        Runningchambers.Add(model);
+                    }
+                    con.Close();
+                    cmd.Dispose();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetRunningChambers: {ex.Message}");
+                throw;
+            }
+            return Runningchambers;
+        }
+
+
+
         // --- Dock Methods ---
 
         public async Task<List<TransactionsInModel>> GetPendingDockAsync(int unitId, int dockPosting)
@@ -891,9 +1015,9 @@ ORDER BY ci.GateInId DESC";
             return results;
         }
 
-        public async Task<TransactionsInModel?> GetDockPrivAsync(string userGroup)
+        public async Task<DocPrivModel?> GetDockPrivAsync(string userGroup)
         {
-            TransactionsInModel? model = null;
+            DocPrivModel? model = null;
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
                 await con.OpenAsync();
@@ -906,7 +1030,7 @@ ORDER BY ci.GateInId DESC";
                     {
                         if (await reader.ReadAsync())
                         {
-                            model = new TransactionsInModel
+                            model = new DocPrivModel
                             {
                                 DockAdd = reader.GetBoolean(reader.GetOrdinal("Addval")),
                                 DockEdit = reader.GetBoolean(reader.GetOrdinal("Editval")),
@@ -919,6 +1043,7 @@ ORDER BY ci.GateInId DESC";
             }
             return model;
         }
+
 
         // --- Location Methods ---
 
@@ -1037,6 +1162,31 @@ ORDER BY ci.GateInId DESC";
             }
             return true;
         }
+
+
+
+        //public async Task<CompanyModel?> GeneratethermalPreview(int selectedGrowerId)
+        //{
+        //    using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
+        //    {
+        //        await con.OpenAsync();
+
+        //        using (SqlCommand cmd = new SqlCommand("thermalproc", con))
+        //        {
+        //            cmd.CommandType = CommandType.StoredProcedure;
+
+        //            // Make sure there are no extra spaces in parameter names!
+        //            cmd.Parameters.AddWithValue("@lotno", selectedGrowerId);
+
+        //            await cmd.ExecuteNonQueryAsync();
+        //            con.Close();
+        //            cmd.Dispose();
+        //        }
+        //        return companyModel;
+        //    }
+
+        //}
+
     }
 }
 

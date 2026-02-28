@@ -1,7 +1,8 @@
+using ColdStoreManagement.BLL.Models.Chamber;
+using ColdStoreManagement.BLL.Models.TransactionsIn;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ColdStoreManagement.BLL.Models.TransactionsIn;
 
 namespace ColdStoreManagement.DAL.Services.Interface
 {
@@ -29,9 +30,12 @@ namespace ColdStoreManagement.DAL.Services.Interface
         // Quality, Dock, Location Methods
         Task<List<TransactionsInModel>> GetPendingQualityAsync(int unitId, string status);
         Task<TransactionsInModel?> GetQcPrivAsync(string userGroup);
+        Task<List<QualityModel>> GetallQuality();
+        Task<LotDetailModel?> GetLotFullDet(int selectedGrowerId);
+        Task<List<RunningChamberModel>> GetRunningChambers(int selectedid);
 
         Task<List<TransactionsInModel>> GetPendingDockAsync(int unitId, int dockPosting);
-        Task<TransactionsInModel?> GetDockPrivAsync(string userGroup);
+        Task<DocPrivModel?> GetDockPrivAsync(string userGroup);
 
         Task<List<TransactionsInModel>> GetPendingLocationAsync(int unitId, string status);
         Task<TransactionsInModel?> GetLocationPrivAsync(string userGroup);

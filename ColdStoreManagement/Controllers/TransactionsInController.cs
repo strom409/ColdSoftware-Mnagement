@@ -60,7 +60,12 @@ namespace ColdStoreManagement.Controllers
             if (result == null) return NotFound();
             return Ok(result);
         }
-
+        //[HttpGet("preinward/thermal/{id}")]
+        //public IActionResult GetThermalPreview(int id)
+        //{
+        //    byte[] pdfBytes = _reportService.GenerateThermalPdf(id);
+        //    return File(pdfBytes, "application/pdf");
+        //}
 
         // --- Chamber Allocation Endpoints ---
 
@@ -121,7 +126,13 @@ namespace ColdStoreManagement.Controllers
         }
 
         // --- Quality Endpoints ---
-
+        [HttpGet("GetallQuality")]
+        public async Task<IActionResult> GetAllQuality()
+        {
+            var result = await _service.GetallQuality();
+            return Ok(result);
+        }
+        
         [HttpGet("GetPendingQuality/{unitId}/{status}")]
         public async Task<IActionResult> GetPendingQuality(int unitId, string status)
         {
@@ -133,6 +144,19 @@ namespace ColdStoreManagement.Controllers
         public async Task<IActionResult> GetQcPriv(string userGroup)
         {
             var result = await _service.GetQcPrivAsync(userGroup);
+            return Ok(result);
+        }
+        [HttpGet("GetLotFullDet/{selectedGrowerId}")]
+        public async Task<IActionResult> GetLotFullDet(int selectedGrowerId)
+        {
+            var result = await _service.GetLotFullDet(selectedGrowerId);
+            return Ok(result);
+        }
+        
+        [HttpGet("GetRunningChambers/{selectedid}")]
+        public async Task<IActionResult> GetRunningChambers(int selectedid)
+        {
+            var result = await _service.GetRunningChambers(selectedid);
             return Ok(result);
         }
 
@@ -174,5 +198,33 @@ namespace ColdStoreManagement.Controllers
             var result = await _service.UpdateItemStatusAsync(itemId);
             return Ok(result);
         }
+
+
+
+
+
+        //[HttpGet("quality-preview/{lotNo}")]
+        //public async Task<IActionResult> GetQualityPreview(int lotNo)
+        //{
+        //    var data = await _service.GetQualityPreview(lotNo); // DB data only
+        //    return Ok(data);
+        //}
+
+        //[HttpPost("quality-report")]
+        //public async Task<IActionResult> GetQualityReport(FilterDto filter)
+        //{
+        //    var data = await _service.GenerateQualityReport(filter);
+        //    return Ok(data);
+        //}
+
+        //[HttpPost("quality-report-excel")]
+        //public async Task<IActionResult> ExportQualityExcel(FilterDto filter)
+        //{
+        //    var bytes = await _service.ExportQualityExcel(filter);
+        //    return File(bytes,
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        "QualityReport.xlsx");
+        //}
+
     }
 }
