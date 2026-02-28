@@ -2,45 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
+using ColdStoreManagement.DAL.Helper;
 using ColdStoreManagement.DAL.Services.Interface.TransactionsOut;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
 namespace ColdStoreManagement.DAL.Services.Implementation.TransactionsOut
 {
-    public class StoreOutService : IStoreOutService
+    public class StoreOutService(SQLHelperCore sql) : BaseService(sql), IStoreOutService
     {
-        private readonly IConfiguration _configuration;
-
-        public StoreOutService(IConfiguration configuration)
+        public async Task<List<StoreOutDto>> GetStoreOutStatus(string stat, int UnitId, string demandirn, string avuser)
         {
-            _configuration = configuration;
-        }
+            // Handle Swagger string "null" vs actual null
+            if (demandirn == "null") demandirn = null;
+            if (stat == "null") stat = null;
 
-        public async Task<List<CompanyModel>> GetStoreOutStatus(string stat, int UnitId, string demandirn, string avuser)
-        {
-            List<CompanyModel> GetDailyPreinward = new List<CompanyModel>();
-
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
-            {
-                const string query = @"SELECT 
-    l.isAssigned AS Assign,
-    ps.partytypeid + '-' + ps.partyname AS PartyName,
-    l.demandirn,
-    l.outid,
-    MAX(l.otype) AS otype,
-    SUM(COALESCE(l.orderqty, 0)) AS TotalLotOrderQty,
+            const string query = @"SELECT 
+    l.isAssigned AS IsuserAssigned,
+    ps.partytypeid + '-' + ps.partyname AS GrowerGroupName,
+    l.demandirn AS DemandIrn,
+    l.outid AS DemandNo,
+    MAX(l.otype) AS OrderType,
+    SUM(COALESCE(l.orderqty, 0)) AS TotalOrderQty,
     ISNULL((
         SELECT SUM(COALESCE(s.orderqty, 0)) 
         FROM StoreOutTrans s 
         WHERE s.outid = l.outid 
-    ), 0) AS TotalStoreOrderQty,
+    ), 0) AS TotalStoreOut,
     ISNULL((
         SELECT SUM(COALESCE(df.orderqty, 0)) 
         FROM DraftOutTrans df 
         WHERE df.outid = l.outid 
-    ), 0) AS TotalDraftedQty,
+    ), 0) AS DraftedQty,
     CASE 
         WHEN EXISTS (
             SELECT 1 
@@ -54,7 +48,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation.TransactionsOut
             WHERE s.outid = l.outid
         ), 0) THEN 'Completed'
         ELSE 'Pending'
-    END AS Status
+    END AS StoreStat
 FROM LotOutTrans l
 LEFT OUTER JOIN party ps ON ps.partyid = l.PartyId 
 WHERE 
@@ -107,146 +101,62 @@ GROUP BY
     l.demandirn,
     ps.partytypeid + '-' + ps.partyname
 ORDER BY l.outid desc";
-                SqlCommand cmd = new SqlCommand(query, con)
-                {
-                    CommandType = CommandType.Text
-                };
-                cmd.Parameters.AddWithValue("@status", stat);
-                cmd.Parameters.AddWithValue("@unit", UnitId);
-                cmd.Parameters.AddWithValue("@demandirn", demandirn);
-                cmd.Parameters.AddWithValue("@username", avuser);
 
-                con.Open();
-                SqlDataReader rdr = await cmd.ExecuteReaderAsync();
+            var parameters = new[]
+            {
+                new SqlParameter("@status", stat ?? (object)DBNull.Value),
+                new SqlParameter("@unit", UnitId),
+                new SqlParameter("@demandirn", demandirn ?? (object)DBNull.Value),
+                new SqlParameter("@username", avuser ?? (object)DBNull.Value)
+            };
 
-                while (rdr.Read())
-                {
-                    CompanyModel companyModel = new CompanyModel
-                    {
-                        IsuserAssigned = rdr.GetBoolean(rdr.GetOrdinal("Assign")),
-                        DemandIrn = rdr["demandirn"].ToString(),
-                        GrowerGroupName = rdr["PartyName"].ToString(),
-                        OrderType = rdr["otype"].ToString(),
-                        TotalOrderQty = Convert.ToInt32(rdr["TotalLotOrderQty"]),
-                        TotalStoreOut = Convert.ToInt32(rdr["TotalStoreOrderQty"]),
-                        DraftedQty = Convert.ToInt32(rdr["TotalDraftedQty"]),
-                        DemandNo = Convert.ToInt32(rdr["outid"]),
-                        StoreStat = rdr["Status"].ToString(),
-                    };
-                    GetDailyPreinward.Add(companyModel);
-                }
-                con.Close();
-                cmd.Dispose();
-            }
-            return GetDailyPreinward;
+            return await _sql.ExecuteReaderAsync<StoreOutDto>(query, CommandType.Text, parameters);
         }
 
-        public async Task<bool> UpdateDraftQuantity(CompanyModel EditModel)
+        public async Task<bool> UpdateDraftQuantity(StoreOutDto EditModel)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
-            {
-                const string query = "update StoreOutTransrep set count=1,OrderQty=@oqty where lotno=@Lotno and TempDraftId=@Tempid";
-                SqlCommand cmd = new SqlCommand(query, con)
-                {
-                    CommandType = CommandType.Text,
-                };
-                cmd.Parameters.AddWithValue("@oqty", EditModel.GradingQty);
-                cmd.Parameters.AddWithValue("@Lotno", EditModel.Lotno);
-                cmd.Parameters.AddWithValue("@Tempid", EditModel.TempDraftId);
-
-                con.Open();
-                await cmd.ExecuteNonQueryAsync();
-                con.Close();
-                cmd.Dispose();
-            }
+            const string query = "update StoreOutTransrep set count=1,OrderQty=@oqty where lotno=@Lotno and TempDraftId=@Tempid";
+            await _sql.ExecuteNonQueryAsync(CommandType.Text, query,
+                new SqlParameter("@oqty", EditModel.GradingQty),
+                new SqlParameter("@Lotno", EditModel.Lotno),
+                new SqlParameter("@Tempid", EditModel.TempDraftId));
             return true;
         }
 
         public async Task<bool> ForceUpload(int id, string Frems)
         {
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
-            {
-                const string query = "update StoreOutTrans set PreLotPrefix=@fix,remarks=@Pkname where outid=@Id";
-                SqlCommand cmd = new SqlCommand(query, con)
-                {
-                    CommandType = CommandType.Text,
-                };
-                cmd.Parameters.AddWithValue("@Id", id);
-                cmd.Parameters.AddWithValue("@Pkname", Frems);
-                cmd.Parameters.AddWithValue("@fix", "FORCE");
-
-                con.Open();
-                await cmd.ExecuteNonQueryAsync();
-                con.Close();
-                cmd.Dispose();
-            }
+            const string query = "update StoreOutTrans set PreLotPrefix=@fix,remarks=@Pkname where outid=@Id";
+            await _sql.ExecuteNonQueryAsync(CommandType.Text, query,
+                new SqlParameter("@Id", id),
+                new SqlParameter("@Pkname", Frems),
+                new SqlParameter("@fix", "FORCE"));
             return true;
         }
 
-        public async Task<CompanyModel?> ValidateStoreOutTransQty(CompanyModel companyModel)
+        public async Task<StoreOutDto?> ValidateStoreOutTransQty(StoreOutDto companyModel)
         {
             if (companyModel == null) return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
-            {
-                await con.OpenAsync();
+            await _sql.ExecuteNonQueryAsync(CommandType.StoredProcedure, "ValidateStoreOutTransQty",
+                new SqlParameter("@OutID", companyModel.DemandNo),
+                new SqlParameter("@Lotno", companyModel.Lotno),
+                new SqlParameter("@NewQty", companyModel.TotalStoreOut));
 
-                using (SqlCommand cmd = new SqlCommand("ValidateStoreOutTransQty", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@OutID", companyModel.DemandNo);
-                    cmd.Parameters.AddWithValue("@Lotno", companyModel.Lotno);
-                    cmd.Parameters.AddWithValue("@NewQty", companyModel.TotalStoreOut);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                using (SqlCommand cmd2 = new SqlCommand("SELECT TOP 1 flag,remarks FROM dbo.svalidate", con))
-                {
-                    using (SqlDataReader rdr = await cmd2.ExecuteReaderAsync())
-                    {
-                        if (rdr.Read())
-                        {
-                            companyModel.RetMessage = rdr["remarks"]?.ToString();
-                            companyModel.RetFlag = rdr["flag"]?.ToString();
-                        }
-                    }
-                }
-                con.Close();
-            }
+            await FillValidationAsync(companyModel);
             return companyModel;
         }
 
-        public async Task<CompanyModel?> AddStoreOut(CompanyModel companyModel)
+        public async Task<StoreOutDto?> AddStoreOut(StoreOutDto companyModel)
         {
             if (companyModel == null) return null;
 
-            using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
-            {
-                await con.OpenAsync();
+            await _sql.ExecuteNonQueryAsync(CommandType.StoredProcedure, "AddStoreOut",
+                new SqlParameter("@OutID", companyModel.DemandNo),
+                new SqlParameter("@Lotno", companyModel.Lotno),
+                new SqlParameter("@NewQty", companyModel.TotalStoreOut),
+                new SqlParameter("@Createdby", companyModel.GlobalUserName));
 
-                using (SqlCommand cmd = new SqlCommand("AddStoreOut", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@OutID", companyModel.DemandNo);
-                    cmd.Parameters.AddWithValue("@Lotno", companyModel.Lotno);
-                    cmd.Parameters.AddWithValue("@NewQty", companyModel.TotalStoreOut);
-                    cmd.Parameters.AddWithValue("@Createdby", companyModel.GlobalUserName);
-                    await cmd.ExecuteNonQueryAsync();
-                }
-
-                using (SqlCommand cmd2 = new SqlCommand("SELECT TOP 1 flag,remarks FROM dbo.svalidate", con))
-                {
-                    using (SqlDataReader rdr = await cmd2.ExecuteReaderAsync())
-                    {
-                        if (rdr.Read())
-                        {
-                            companyModel.RetMessage = rdr["remarks"]?.ToString();
-                            companyModel.RetFlag = rdr["flag"]?.ToString();
-                        }
-                    }
-                }
-                con.Close();
-            }
+            await FillValidationAsync(companyModel);
             return companyModel;
         }
     }

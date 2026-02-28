@@ -1,4 +1,4 @@
-using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Services.Interface.TransactionsOut;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +18,7 @@ namespace ColdStoreManagement.Controllers.TransactionsOut
         }
 
         [HttpPost("UpdateDraftQuantity")]
-        public async Task<IActionResult> UpdateDraftQuantity([FromBody] CompanyModel EditModel)
+        public async Task<IActionResult> UpdateDraftQuantity([FromBody] StoreOutDto EditModel)
         {
             var result = await _storeOutService.UpdateDraftQuantity(EditModel);
             return Ok(result);
@@ -32,14 +32,14 @@ namespace ColdStoreManagement.Controllers.TransactionsOut
         }
 
         [HttpPost("ValidateStoreOutTransQty")]
-        public async Task<IActionResult> ValidateStoreOutTransQty([FromBody] CompanyModel companyModel)
+        public async Task<IActionResult> ValidateStoreOutTransQty([FromBody] StoreOutDto companyModel)
         {
             var result = await _storeOutService.ValidateStoreOutTransQty(companyModel);
             return Ok(result);
         }
 
         [HttpPost("AddStoreOut")]
-        public async Task<IActionResult> AddStoreOut([FromBody] CompanyModel companyModel)
+        public async Task<IActionResult> AddStoreOut([FromBody] StoreOutDto companyModel)
         {
             var result = await _storeOutService.AddStoreOut(companyModel);
             return Ok(result);

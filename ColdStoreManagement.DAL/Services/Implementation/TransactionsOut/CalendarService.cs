@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
-using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 using ColdStoreManagement.DAL.Services.Interface.TransactionsOut;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -17,9 +18,9 @@ namespace ColdStoreManagement.DAL.Services.Implementation.TransactionsOut
             _configuration = configuration;
         }
 
-        public async Task<List<CompanyModel>> GetallSlots()
+        public async Task<List<CalendarSlotDto>> GetallSlots()
         {
-            List<CompanyModel> Getallslot = new List<CompanyModel>();
+            List<CalendarSlotDto> Getallslot = new List<CalendarSlotDto>();
 
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
@@ -34,7 +35,7 @@ namespace ColdStoreManagement.DAL.Services.Implementation.TransactionsOut
 
                 while (rdr.Read())
                 {
-                    CompanyModel companyModel = new CompanyModel
+                    CalendarSlotDto companyModel = new CalendarSlotDto
                     {
                         calendardate = rdr["sdate"] as DateTime? ?? DateTime.MinValue,
                         SlotQty = rdr.IsDBNull(rdr.GetOrdinal("Qty")) ? 0 : rdr.GetInt32(rdr.GetOrdinal("Qty")),
@@ -47,9 +48,9 @@ namespace ColdStoreManagement.DAL.Services.Implementation.TransactionsOut
             return Getallslot;
         }
 
-        public async Task<List<CompanyModel>> GetSlotbydate(DateTime Slotdate)
+        public async Task<List<CalendarSlotDto>> GetSlotbydate(DateTime Slotdate)
         {
-            List<CompanyModel> GetGroweralslot = new List<CompanyModel>();
+            List<CalendarSlotDto> GetGroweralslot = new List<CalendarSlotDto>();
 
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
@@ -75,7 +76,7 @@ ORDER BY id";
 
                 while (reader.Read())
                 {
-                    CompanyModel companyModel = new CompanyModel
+                    CalendarSlotDto companyModel = new CalendarSlotDto
                     {
                         Slotno = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
                         calendardate = reader["sdate"] as DateTime? ?? DateTime.MinValue,
@@ -93,9 +94,9 @@ ORDER BY id";
             return GetGroweralslot;
         }
 
-        public async Task<CompanyModel?> GetSlotdet(int selectedGrowerId)
+        public async Task<CalendarSlotDto?> GetSlotdet(int selectedGrowerId)
         {
-            CompanyModel? companyModel = null;
+            CalendarSlotDto? companyModel = null;
 
             using (SqlConnection con = new SqlConnection(_configuration.GetConnectionString("SqlDbContext")))
             {
@@ -121,7 +122,7 @@ ORDER BY id";
                     {
                         if (await reader.ReadAsync())
                         {
-                            companyModel = new CompanyModel
+                            companyModel = new CalendarSlotDto
                             {
                                 Slotno = reader.IsDBNull(reader.GetOrdinal("id")) ? 0 : reader.GetInt32(reader.GetOrdinal("id")),
                                 calendardate = reader["sdate"] as DateTime? ?? DateTime.MinValue,

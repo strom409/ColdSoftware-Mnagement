@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ColdStoreManagement.BLL.Models.Company;
+using ColdStoreManagement.BLL.Models.DTOs;
 
 namespace ColdStoreManagement.DAL.Services.Interface.TransactionsOut
 {
     public interface IStoreOutService
     {
-        Task<List<CompanyModel>> GetStoreOutStatus(string stat, int UnitId, string demandirn, string avuser);
-        Task<bool> UpdateDraftQuantity(CompanyModel EditModel);
+        Task<List<StoreOutDto>> GetStoreOutStatus(string stat, int UnitId, string demandirn, string avuser);
+        Task<bool> UpdateDraftQuantity(StoreOutDto EditModel);
         Task<bool> ForceUpload(int id, string Frems);
-        Task<CompanyModel?> ValidateStoreOutTransQty(CompanyModel companyModel);
-        Task<CompanyModel?> AddStoreOut(CompanyModel companyModel);
+        Task<StoreOutDto?> ValidateStoreOutTransQty(StoreOutDto companyModel);
+        Task<StoreOutDto?> AddStoreOut(StoreOutDto companyModel);
     }
 }

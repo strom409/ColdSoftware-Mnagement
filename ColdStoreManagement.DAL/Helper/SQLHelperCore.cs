@@ -196,6 +196,30 @@ namespace ColdStoreManagement.DAL.Helper
 
         #endregion ExecuteNonQuery (Async)
 
+        #region TVP Support (Async)
+        public async Task<int> ExecuteNonQueryAsync(string spName, string parameterName, DataTable tvp, string typeName, params SqlParameter[] otherParameters)
+        {
+            await using SqlConnection connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            await using SqlCommand cmd = new SqlCommand(spName, connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            SqlParameter parameter = cmd.Parameters.AddWithValue(parameterName, tvp);
+            parameter.SqlDbType = SqlDbType.Structured;
+            parameter.TypeName = typeName;
+
+            if (otherParameters != null)
+            {
+                cmd.Parameters.AddRange(otherParameters);
+            }
+
+            return await cmd.ExecuteNonQueryAsync();
+        }
+        #endregion
+
         #region ---------- ExecuteScalar ----------
 
         public async Task<object?> ExecuteScalarAsync(string commandText, CommandType commandType,
